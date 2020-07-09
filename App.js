@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -15,21 +15,59 @@ import {
   TextInput,
   Image,
   Dimensions,
+  TouchableHighlight,
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 const { width } = Dimensions.get('window');
 export default function App() {
   const [password, setpasword] = useState('');
   const [result, setresult] = useState('');
+  const [Isclick, setIsclick] = useState(true);
+  const [count, setcount] = useState(0);
+  const [Btndisable, setBtndisable] = useState(false);
+  const [Img, setImg] = useState(require('./src/img/login.png'));
+  const [remainSecond, setRemainSecond] = useState(0)
   const resultTrue = '輸入正確';
   const resultFalse = '輸入錯誤請重新輸入';
   const confirm = () => {
     if (password === 'A12345678') {
       setresult(resultTrue)
+      setcount(0)
     } else {
       setresult(resultFalse)
+      setcount(count + 1)
     }
   }
+  // effect
+  useEffect(() => {
+    const countDownSecond = 180
+    if (count >= 10 && Isclick == true) {
+      setIsclick(false);
+      setBtndisable(true);
+      setImg(require('./src/img/cancel.png'));
+      alert('輸入錯誤超過10次\n請3分鐘後在試');
+      // 產生 Timer
+      console.log(`[timer] == start count down ${countDownSecond}s  ==`)
+      const startTime = Date.now()
+      const countDownTimer = setInterval(() => {//每幾毫秒執行一次
+        // 計算剩餘秒數
+        const pastSeconds = parseInt((Date.now() - startTime) / 1000)
+        const remain = (countDownSecond - pastSeconds)
+        setRemainSecond(remain < 0 ? 0 : remain)
+        console.log('[timer] count down: ', remain)
+        // 檢查是否結束
+        if (remain <= 0) {
+          clearInterval(countDownTimer)
+          setIsclick(true);
+          setBtndisable(false);
+          setImg(require('./src/img/login.png'))
+          console.log(`[timer] == stop count down ${countDownSecond}s  ==`)
+        }
+
+      }, 1000)
+    }
+  }, [count]) // 相依 prop / state 值的 Effect
+
   return (
     <View style={styles.container}>
       <Swiper
@@ -78,13 +116,18 @@ export default function App() {
         autoFocus={true}
       />
       <Text style={styles.text}>您輸入的身分證字號是{password}</Text>
-      <Button
-        title="confirm"
+      <TouchableHighlight style={{ width: 50, height: 50, backgroundColor: 'white' }}
+        disabled={Btndisable}
         onPress={() => confirm()}
-      />
+      >
+        <Image
+          style={{ width: 50, height: 50 }}
+          source={Img}
+        />
+      </TouchableHighlight>
       <Text>{setresult}</Text>
       <Text>{result}</Text>
-    </View>
+    </View >
   );
 }
 
