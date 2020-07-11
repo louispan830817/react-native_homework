@@ -16,6 +16,7 @@ import {
   Image,
   Dimensions,
   TouchableHighlight,
+  Alert
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 const { width } = Dimensions.get('window');
@@ -27,16 +28,20 @@ export default function App() {
   const [Btndisable, setBtndisable] = useState(false);
   const [Img, setImg] = useState(require('./src/img/login.png'));
   const [remainSecond, setRemainSecond] = useState(0)
+  const [resultcolor, setResultcolor] = useState('red')
   const resultTrue = '輸入正確';
-  const resultFalse = '輸入錯誤請重新輸入';
+  const resultFalse = '輸入錯誤還可輸入';
   const confirm = () => {
     if (password === 'A12345678') {
       setresult(resultTrue)
       setcount(0)
-    } else {
-      setresult(resultFalse)
+      setResultcolor('green')
+    } else if (count <= 10) {
+      setresult(resultFalse + (9 - count) + '次')
       setcount(count + 1)
+      setResultcolor('red')
     }
+    console.log(count)
   }
   // effect
   useEffect(() => {
@@ -45,7 +50,7 @@ export default function App() {
       setIsclick(false);
       setBtndisable(true);
       setImg(require('./src/img/cancel.png'));
-      alert('輸入錯誤超過10次\n請3分鐘後在試');
+      Alert.alert('登入錯誤', '輸入錯誤超過10次\n請3分鐘後在試');
       // 產生 Timer
       console.log(`[timer] == start count down ${countDownSecond}s  ==`)
       const startTime = Date.now()
@@ -56,13 +61,17 @@ export default function App() {
         setRemainSecond(remain < 0 ? 0 : remain)
         console.log('[timer] count down: ', remain)
         // 檢查是否結束
+        setresult('於' + remain + '秒後嘗試重新登入')
         if (remain <= 0) {
           clearInterval(countDownTimer)
           setIsclick(true);
           setBtndisable(false);
+          setresult('');
+          setcount(0)
           setImg(require('./src/img/login.png'))
           console.log(`[timer] == stop count down ${countDownSecond}s  ==`)
         }
+
 
       }, 1000)
     }
@@ -102,8 +111,10 @@ export default function App() {
         <Image resizeMode="cover" source={require('./src/img/fox.jpg')} style={styles.img} />
         <Image resizeMode="cover" source={require('./src/img/leopard.jpg')} style={styles.img} />
         <Image resizeMode="cover" source={require('./src/img/lion.jpg')} style={styles.img} />
+        <Image resizeMode="cover" source={require('./src/img/elephant.jpg')} style={styles.img} />
+        <Image resizeMode="cover" source={require('./src/img/cargo.jpg')} style={styles.img} />
       </Swiper>
-      <Text style={styles.text}>身分證字號:A12345678</Text>
+      <Text style={styles.text}>IDCard:A12345678</Text>
       <TextInput
         style={{ height: 50, width: 300, borderRadius: 2, borderColor: 'gray', borderWidth: 5, backgroundColor: 'gray', color: 'white', fontSize: 28, textAlign: 'center' }}
         onChangeText={(text) => setpasword(text)}
@@ -115,7 +126,7 @@ export default function App() {
         editable={true}//設置權限
         autoFocus={true}
       />
-      <Text style={styles.text}>您輸入的身分證字號是{password}</Text>
+      <Text style={styles.text}>Input IDCard:{password}</Text>
       <TouchableHighlight style={{ width: 50, height: 50, backgroundColor: 'white' }}
         disabled={Btndisable}
         onPress={() => confirm()}
@@ -125,8 +136,9 @@ export default function App() {
           source={Img}
         />
       </TouchableHighlight>
-      <Text>{setresult}</Text>
-      <Text>{result}</Text>
+      <Text style={{ color: (resultcolor), fontSize: 18 }}>{result}</Text>
+      {/* <Text style={password === 'A12345678' ? styles.textresultTrue : styles.textresultFalse}>{result}</Text>三元運算即時判斷 */}
+      {/* <Text>{remainSecond == 0 ? '' : remainSecond}</Text> */}
     </View >
   );
 }
@@ -141,6 +153,14 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 25
+  },
+  textresultTrue: {
+    fontSize: 18,
+    color: 'green'
+  },
+  textresultFalse: {
+    fontSize: 18,
+    color: 'red'
   },
   swiper: {},
   img: {
